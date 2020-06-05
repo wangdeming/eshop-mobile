@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.ibdsr.web.modular.shop.goods.dao.GoodsEvaluateDao">
+
+    <resultMap id="EvaluateListVOResultMap" type="cn.ibdsr.web.modular.shop.goods.transfer.EvaluateListVO">
+        <result column="content" property="content" jdbcType="VARCHAR"/>
+        <result column="score" property="score" jdbcType="INTEGER"/>
+        <result column="evalImgs" property="evalImgs" jdbcType="VARCHAR"/>
+        <result column="createdTime" property="createdTime" jdbcType="VARCHAR"/>
+        <result column="shopReply" property="shopReply" jdbcType="VARCHAR"/>
+        <result column="userNickname" property="userNickname" jdbcType="VARCHAR"/>
+        <result column="avatar" property="avatar" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <sql id="EvaluateListVO_Column_List" >
+        ge.content,
+        ge.goods_score AS score,
+        ge.imgs AS evalImgs,
+        ge.created_time AS createdTime,
+        ge.shop_reply AS shopReply,
+        u.nickname AS userNickname,
+        u.avatar AS userAvatar
+    </sql>
+
+    <select id="listEvaluates" resultMap="EvaluateListVOResultMap">
+        SELECT
+        <include refid="EvaluateListVO_Column_List" />
+        FROM
+            goods_evaluate ge
+        LEFT JOIN user u ON ge.user_id = u.id
+        WHERE 1 = 1
+        AND ge.is_deleted = 0
+        AND ge.goods_id = #{goodsId}
+        <if test="evalType != null">
+            AND ge.type = #{evalType}
+        </if>
+        <if test="isHasImg != null">
+            AND ge.imgs IS NOT NULL AND ge.imgs != ''
+        </if>
+        ORDER BY ge.created_time DESC
+    </select>
+
+    <select id="queryHasImgNum" resultType="java.lang.Integer">
+        SELECT
+            COUNT(1)
+        FROM
+            goods_evaluate ge
+        WHERE 1 = 1
+        AND ge.is_deleted = 0
+        AND ge.goods_id = #{goodsId}
+        AND ge.imgs IS NOT NULL
+        AND ge.imgs != ''
+    </select>
+
+    <select id="queryEvalNumGroupByType" resultType="java.util.Map">
+        SELECT
+            ge.type,
+            COUNT(1) AS num
+        FROM
+            goods_evaluate ge
+        WHERE 1 = 1
+        AND is_deleted = 0
+        AND ge.goods_id = #{goodsId}
+        GROUP BY ge.type
+    </select>
+
+    <insert id="batchInsertEvaluates" parameterType="java.util.List">
+        <selectKey resultType="java.lang.Integer" keyProperty="id" order="AFTER">
+            SELECT LAST_INSERT_ID()
+        </selectKey>
+        INSERT INTO goods_evaluate
+        (
+            order_goods_id, order_id, goods_id, user_id,
+            shop_id, content, goods_score,
+            service_score, express_score, type,
+            imgs, created_user, created_time,
+            is_deleted
+        )
+        VALUES
+        <foreach collection="list" item="eval" index="index" separator=",">
+            (
+                #{eval.orderGoodsId}, #{eval.orderId}, #{eval.goodsId}, #{eval.userId},
+                #{eval.shopId}, #{eval.content}, #{eval.goodsScore},
+                #{eval.serviceScore}, #{eval.expressScore}, #{eval.type},
+                #{eval.imgs}, #{eval.createdUser}, #{eval.createdTime},
+                #{eval.isDeleted}
+            )
+        </foreach>
+    </insert>
+
+    <select id="listEvalGoods" resultType="java.util.Map">
+        SELECT
+            ge.content,
+            ge.imgs,
+            ge.goods_score AS goodsScore,
+            ge.service_score AS serviceScore,
+            ge.express_score AS expressScore,
+            sog.goods_id AS goodsId,
+            sog.goods_name AS goodsName,
+            sog.goods_img AS goodsImg,
+            sog.goods_specs AS goodsSpecs
+        FROM
+            goods_evaluate ge
+        LEFT JOIN shop_order_goods sog ON ge.order_goods_id = sog.id
+        WHERE 1 = 1
+        AND ge.is_deleted = 0
+        AND ge.order_id = #{orderId}
+        ORDER BY ge.created_time DESC
+    </select>
+</mapper>

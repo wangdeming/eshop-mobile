@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.ibdsr.web.modular.shop.goods.dao.ShoppingCartDao">
+
+    <resultMap id="CartListResultMap" type="cn.ibdsr.web.modular.shop.goods.transfer.shoppingcart.CartVO">
+        <result column="shopId" property="shopId" jdbcType="BIGINT"/>
+        <result column="shopName" property="shopName" jdbcType="VARCHAR"/>
+        <result column="shopLogo" property="shopLogo" jdbcType="VARCHAR"/>
+        <collection property="cartGoodsList" ofType="cn.ibdsr.web.modular.shop.goods.transfer.shoppingcart.CartGoodsVO">
+            <id column="cartId" property="cartId"/>
+            <result column="num" property="num" jdbcType="INTEGER"/>
+            <result column="goodsId" property="goodsId" jdbcType="BIGINT"/>
+            <result column="skuId" property="skuId" jdbcType="BIGINT"/>
+            <result column="goodsName" property="goodsName" jdbcType="VARCHAR"/>
+            <result column="status" property="status" jdbcType="INTEGER"/>
+            <result column="price" property="price" jdbcType="VARCHAR"/>
+            <result column="stock" property="stock" jdbcType="INTEGER"/>
+            <result column="goodsImg" property="goodsImg" jdbcType="VARCHAR"/>
+            <result column="specs" property="specs" jdbcType="VARCHAR"/>
+        </collection>
+    </resultMap>
+
+    <select id="listCarts" resultMap="CartListResultMap">
+        SELECT
+            sc.id AS cartId,
+            sc.num,
+            sc.shop_id AS shopId,
+            s.front_name AS shopName,
+            s.logo AS shopLogo,
+            sc.goods_id AS goodsId,
+            sc.sku_id AS skuId,
+            g.name AS goodsName,
+            g.status,
+            IFNULL(gs.price, g.price) AS price,
+            IFNULL(gs.stock, g.stock) AS stock,
+            gs.img AS goodsImg,
+            gs.specs
+        FROM
+            shopping_cart sc
+        LEFT JOIN goods g ON sc.goods_id = g.id
+        LEFT JOIN goods_sku gs ON sc.sku_id = gs.id
+        LEFT JOIN shop s ON sc.shop_id = s.id
+        WHERE 1 = 1
+        AND sc.user_id = #{userId}
+        <if test="type == 1">/*正常商品*/
+            AND g.status = 1
+            AND IFNULL(gs.stock, g.stock) &gt; 0
+        </if>
+        <if test="type == 2">/*已失效商品*/
+            AND (g.status = 2 OR IFNULL(gs.stock, g.stock) &lt;= 0)
+        </if>
+        ORDER BY sc.created_time DESC
+    </select>
+
+    <delete id="batchDeleteCarts" parameterType="java.util.List">
+        DELETE FROM shopping_cart
+        WHERE
+            user_id = #{userId}
+        AND id IN
+        (
+            <foreach collection="cartIds" item="id" index="index" separator=",">
+                #{id}
+            </foreach>
+        )
+    </delete>
+
+    <select id="listExpireCartIds" resultType="java.lang.Long">
+        SELECT
+            sc.id
+        FROM
+        shopping_cart sc
+        LEFT JOIN goods g ON sc.goods_id = g.id
+        LEFT JOIN goods_sku gs ON sc.sku_id = gs.id
+        WHERE 1 = 1
+        AND sc.user_id = #{userId}
+        AND (g.status = 2 OR IFNULL(gs.stock, g.stock) &lt;= 0)
+    </select>
+</mapper>

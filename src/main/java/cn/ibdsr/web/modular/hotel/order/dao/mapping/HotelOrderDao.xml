@@ -1,0 +1,295 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.ibdsr.web.modular.hotel.order.dao.HotelOrderDao">
+    <resultMap id="BaseResultMap" type="cn.ibdsr.web.common.persistence.model.HotelOrder">
+        <id column="id" jdbcType="CHAR" property="id"/>
+        <result column="order_no" jdbcType="VARCHAR" property="orderNo"/>
+        <result column="shop_id" jdbcType="BIGINT" property="shopId"/>
+        <result column="user_id" jdbcType="BIGINT" property="userId"/>
+        <result column="room_id" jdbcType="BIGINT" property="roomId"/>
+        <result column="room_number" jdbcType="SMALLINT" property="roomNumber"/>
+        <result column="price" jdbcType="DECIMAL" property="price"/>
+        <result column="total_amount" jdbcType="DECIMAL" property="totalAmount"/>
+        <result column="mobile" jdbcType="VARCHAR" property="mobile"/>
+        <result column="check_in_date" jdbcType="DATE" property="checkInDate"/>
+        <result column="check_out_date" jdbcType="DATE" property="checkOutDate"/>
+        <result column="can_cancel" jdbcType="TINYINT" property="canCancel"/>
+        <result column="status" jdbcType="TINYINT" property="status"/>
+        <result column="pay_datetime" jdbcType="TIMESTAMP" property="payDatetime"/>
+        <result column="confirm_datetime" jdbcType="TIMESTAMP" property="confirmDatetime"/>
+        <result column="confirm_in_datetime" jdbcType="TIMESTAMP" property="confirmInDatetime"/>
+        <result column="cancel_reason" jdbcType="VARCHAR" property="cancelReason"/>
+        <result column="created_user" jdbcType="BIGINT" property="createdUser"/>
+        <result column="created_time" jdbcType="TIMESTAMP" property="createdTime"/>
+        <result column="modified_user" jdbcType="BIGINT" property="modifiedUser"/>
+        <result column="modified_time" jdbcType="TIMESTAMP" property="modifiedTime"/>
+        <result column="is_deleted" jdbcType="BIT" property="isDeleted"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+    id, order_no, shop_id, user_id, room_id, room_number, price, total_amount, mobile, 
+    check_in_date, check_out_date, can_cancel, status, pay_datetime, confirm_datetime, 
+    confirm_in_datetime, cancel_reason, created_user, created_time, modified_user, modified_time, 
+    is_deleted
+  </sql>
+    <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from hotel_order
+        where id = #{id,jdbcType=CHAR}
+    </select>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.String">
+    delete from hotel_order
+    where id = #{id,jdbcType=CHAR}
+  </delete>
+    <insert id="insert" parameterType="cn.ibdsr.web.common.persistence.model.HotelOrder">
+    insert into hotel_order (id, order_no, shop_id, 
+      user_id, room_id, room_number, 
+      price, total_amount, mobile, 
+      check_in_date, check_out_date, can_cancel, 
+      status, pay_datetime, confirm_datetime, 
+      confirm_in_datetime, cancel_reason, created_user, 
+      created_time, modified_user, modified_time, 
+      is_deleted)
+    values (#{id,jdbcType=CHAR}, #{orderNo,jdbcType=VARCHAR}, #{shopId,jdbcType=BIGINT}, 
+      #{userId,jdbcType=BIGINT}, #{roomId,jdbcType=BIGINT}, #{roomNumber,jdbcType=SMALLINT}, 
+      #{price,jdbcType=DECIMAL}, #{totalAmount,jdbcType=DECIMAL}, #{mobile,jdbcType=VARCHAR}, 
+      #{checkInDate,jdbcType=DATE}, #{checkOutDate,jdbcType=DATE}, #{canCancel,jdbcType=TINYINT}, 
+      #{status,jdbcType=TINYINT}, #{payDatetime,jdbcType=TIMESTAMP}, #{confirmDatetime,jdbcType=TIMESTAMP}, 
+      #{confirmInDatetime,jdbcType=TIMESTAMP}, #{cancelReason,jdbcType=VARCHAR}, #{createdUser,jdbcType=BIGINT}, 
+      #{createdTime,jdbcType=TIMESTAMP}, #{modifiedUser,jdbcType=BIGINT}, #{modifiedTime,jdbcType=TIMESTAMP}, 
+      #{isDeleted,jdbcType=BIT})
+  </insert>
+    <insert id="insertSelective" parameterType="cn.ibdsr.web.common.persistence.model.HotelOrder">
+        insert into hotel_order
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                id,
+            </if>
+            <if test="orderNo != null">
+                order_no,
+            </if>
+            <if test="shopId != null">
+                shop_id,
+            </if>
+            <if test="userId != null">
+                user_id,
+            </if>
+            <if test="roomId != null">
+                room_id,
+            </if>
+            <if test="roomNumber != null">
+                room_number,
+            </if>
+            <if test="price != null">
+                price,
+            </if>
+            <if test="totalAmount != null">
+                total_amount,
+            </if>
+            <if test="mobile != null">
+                mobile,
+            </if>
+            <if test="checkInDate != null">
+                check_in_date,
+            </if>
+            <if test="checkOutDate != null">
+                check_out_date,
+            </if>
+            <if test="canCancel != null">
+                can_cancel,
+            </if>
+            <if test="status != null">
+                status,
+            </if>
+            <if test="payDatetime != null">
+                pay_datetime,
+            </if>
+            <if test="confirmDatetime != null">
+                confirm_datetime,
+            </if>
+            <if test="confirmInDatetime != null">
+                confirm_in_datetime,
+            </if>
+            <if test="cancelReason != null">
+                cancel_reason,
+            </if>
+            <if test="createdUser != null">
+                created_user,
+            </if>
+            <if test="createdTime != null">
+                created_time,
+            </if>
+            <if test="modifiedUser != null">
+                modified_user,
+            </if>
+            <if test="modifiedTime != null">
+                modified_time,
+            </if>
+            <if test="isDeleted != null">
+                is_deleted,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                #{id,jdbcType=CHAR},
+            </if>
+            <if test="orderNo != null">
+                #{orderNo,jdbcType=VARCHAR},
+            </if>
+            <if test="shopId != null">
+                #{shopId,jdbcType=BIGINT},
+            </if>
+            <if test="userId != null">
+                #{userId,jdbcType=BIGINT},
+            </if>
+            <if test="roomId != null">
+                #{roomId,jdbcType=BIGINT},
+            </if>
+            <if test="roomNumber != null">
+                #{roomNumber,jdbcType=SMALLINT},
+            </if>
+            <if test="price != null">
+                #{price,jdbcType=DECIMAL},
+            </if>
+            <if test="totalAmount != null">
+                #{totalAmount,jdbcType=DECIMAL},
+            </if>
+            <if test="mobile != null">
+                #{mobile,jdbcType=VARCHAR},
+            </if>
+            <if test="checkInDate != null">
+                #{checkInDate,jdbcType=DATE},
+            </if>
+            <if test="checkOutDate != null">
+                #{checkOutDate,jdbcType=DATE},
+            </if>
+            <if test="canCancel != null">
+                #{canCancel,jdbcType=TINYINT},
+            </if>
+            <if test="status != null">
+                #{status,jdbcType=TINYINT},
+            </if>
+            <if test="payDatetime != null">
+                #{payDatetime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="confirmDatetime != null">
+                #{confirmDatetime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="confirmInDatetime != null">
+                #{confirmInDatetime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="cancelReason != null">
+                #{cancelReason,jdbcType=VARCHAR},
+            </if>
+            <if test="createdUser != null">
+                #{createdUser,jdbcType=BIGINT},
+            </if>
+            <if test="createdTime != null">
+                #{createdTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="modifiedUser != null">
+                #{modifiedUser,jdbcType=BIGINT},
+            </if>
+            <if test="modifiedTime != null">
+                #{modifiedTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="isDeleted != null">
+                #{isDeleted,jdbcType=BIT},
+            </if>
+        </trim>
+    </insert>
+    <update id="updateByPrimaryKeySelective" parameterType="cn.ibdsr.web.common.persistence.model.HotelOrder">
+        update hotel_order
+        <set>
+            <if test="orderNo != null">
+                order_no = #{orderNo,jdbcType=VARCHAR},
+            </if>
+            <if test="shopId != null">
+                shop_id = #{shopId,jdbcType=BIGINT},
+            </if>
+            <if test="userId != null">
+                user_id = #{userId,jdbcType=BIGINT},
+            </if>
+            <if test="roomId != null">
+                room_id = #{roomId,jdbcType=BIGINT},
+            </if>
+            <if test="roomNumber != null">
+                room_number = #{roomNumber,jdbcType=SMALLINT},
+            </if>
+            <if test="price != null">
+                price = #{price,jdbcType=DECIMAL},
+            </if>
+            <if test="totalAmount != null">
+                total_amount = #{totalAmount,jdbcType=DECIMAL},
+            </if>
+            <if test="mobile != null">
+                mobile = #{mobile,jdbcType=VARCHAR},
+            </if>
+            <if test="checkInDate != null">
+                check_in_date = #{checkInDate,jdbcType=DATE},
+            </if>
+            <if test="checkOutDate != null">
+                check_out_date = #{checkOutDate,jdbcType=DATE},
+            </if>
+            <if test="canCancel != null">
+                can_cancel = #{canCancel,jdbcType=TINYINT},
+            </if>
+            <if test="status != null">
+                status = #{status,jdbcType=TINYINT},
+            </if>
+            <if test="payDatetime != null">
+                pay_datetime = #{payDatetime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="confirmDatetime != null">
+                confirm_datetime = #{confirmDatetime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="confirmInDatetime != null">
+                confirm_in_datetime = #{confirmInDatetime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="cancelReason != null">
+                cancel_reason = #{cancelReason,jdbcType=VARCHAR},
+            </if>
+            <if test="createdUser != null">
+                created_user = #{createdUser,jdbcType=BIGINT},
+            </if>
+            <if test="createdTime != null">
+                created_time = #{createdTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="modifiedUser != null">
+                modified_user = #{modifiedUser,jdbcType=BIGINT},
+            </if>
+            <if test="modifiedTime != null">
+                modified_time = #{modifiedTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="isDeleted != null">
+                is_deleted = #{isDeleted,jdbcType=BIT},
+            </if>
+        </set>
+        where id = #{id,jdbcType=CHAR}
+    </update>
+    <update id="updateByPrimaryKey" parameterType="cn.ibdsr.web.common.persistence.model.HotelOrder">
+    update hotel_order
+    set order_no = #{orderNo,jdbcType=VARCHAR},
+      shop_id = #{shopId,jdbcType=BIGINT},
+      user_id = #{userId,jdbcType=BIGINT},
+      room_id = #{roomId,jdbcType=BIGINT},
+      room_number = #{roomNumber,jdbcType=SMALLINT},
+      price = #{price,jdbcType=DECIMAL},
+      total_amount = #{totalAmount,jdbcType=DECIMAL},
+      mobile = #{mobile,jdbcType=VARCHAR},
+      check_in_date = #{checkInDate,jdbcType=DATE},
+      check_out_date = #{checkOutDate,jdbcType=DATE},
+      can_cancel = #{canCancel,jdbcType=TINYINT},
+      status = #{status,jdbcType=TINYINT},
+      pay_datetime = #{payDatetime,jdbcType=TIMESTAMP},
+      confirm_datetime = #{confirmDatetime,jdbcType=TIMESTAMP},
+      confirm_in_datetime = #{confirmInDatetime,jdbcType=TIMESTAMP},
+      cancel_reason = #{cancelReason,jdbcType=VARCHAR},
+      created_user = #{createdUser,jdbcType=BIGINT},
+      created_time = #{createdTime,jdbcType=TIMESTAMP},
+      modified_user = #{modifiedUser,jdbcType=BIGINT},
+      modified_time = #{modifiedTime,jdbcType=TIMESTAMP},
+      is_deleted = #{isDeleted,jdbcType=BIT}
+    where id = #{id,jdbcType=CHAR}
+  </update>
+</mapper>

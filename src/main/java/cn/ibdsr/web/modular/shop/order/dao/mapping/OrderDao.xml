@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.ibdsr.web.modular.shop.order.dao.OrderDao">
+    <resultMap id="ShopGoodsResultMap" type="cn.ibdsr.web.modular.shop.order.transfer.OrderVO">
+        <id column="id" property="id"/>
+        <result column="shop_id" property="shopId"/>
+        <result column="shop_name" property="shopName"/>
+        <result column="shop_logo" property="shopLogo"/>
+        <result column="status" property="status"/>
+        <result column="is_evaluated" property="isEvaluated"/>
+        <result column="order_price" property="orderPrice"/>
+        <result column="express_fee" property="expressFee"/>
+        <collection property="goods" ofType="cn.ibdsr.web.modular.shop.order.transfer.OrderGoodsVO" column="id" select="listOrderGoods">
+            <id column="order_goods_id" property="id"/>
+            <result column="goods_id" property="goodsId"/>
+            <result column="goods_name" property="goodsName"/>
+            <result column="goods_img" property="goodsImg"/>
+            <result column="nums" property="nums"/>
+            <result column="goods_specs" property="goodsSpecs"/>
+            <result column="unit_price" property="unitPrice"/>
+            <result column="delivery_status" property="deliveryStatus"/>
+            <result column="service_status" property="serviceStatus"/>
+        </collection>
+    </resultMap>
+
+    <resultMap id="GoodsMap" type="cn.ibdsr.web.modular.shop.order.transfer.OrderGoodsVO">
+        <id column="order_goods_id" property="id"/>
+        <result column="goods_id" property="goodsId"/>
+        <result column="goods_name" property="goodsName"/>
+        <result column="goods_img" property="goodsImg"/>
+        <result column="nums" property="nums"/>
+        <result column="goods_specs" property="goodsSpecs"/>
+        <result column="unit_price" property="unitPrice"/>
+        <result column="delivery_status" property="deliveryStatus"/>
+        <result column="service_status" property="serviceStatus"/>
+    </resultMap>
+
+    <resultMap id="OrderDetailMap" type="cn.ibdsr.web.modular.shop.order.transfer.OrderDetailVO" >
+        <id column="id" property="id"/>
+        <result column="order_no" property="orderNo"/>
+        <result column="consignee_name" property="consigneeName"/>
+        <result column="consignee_phone" property="consigneePhone"/>
+        <result column="province" property="province"/>
+        <result column="city" property="city"/>
+        <result column="district" property="district"/>
+        <result column="is_evaluated" property="isEvaluated"/>
+        <result column="address" property="address"/>
+        <result column="delivery_type" property="deliveryType"/>
+        <result column="delivery_time" property="deliveryTime"/>
+        <result column="express_fee" property="expressFee"/>
+        <result column="cancel_time" property="cancelTime"/>
+        <result column="created_time" property="createdTime"/>
+        <result column="payment_time" property="paymentTime"/>
+        <result column="receive_time" property="receiveTime"/>
+        <result column="shop_id" property="shopId"/>
+        <result column="shop_name" property="shopName"/>
+        <result column="shop_logo" property="shopLogo"/>
+        <result column="status" property="status"/>
+        <result column="order_price" property="orderPrice"/>
+        <collection property="goods" ofType="cn.ibdsr.web.modular.shop.order.transfer.OrderGoodsVO">
+            <id column="order_goods_id" property="id"/>
+            <result column="goods_id" property="goodsId"/>
+            <result column="goods_name" property="goodsName"/>
+            <result column="goods_img" property="goodsImg"/>
+            <result column="nums" property="nums"/>
+            <result column="goods_specs" property="goodsSpecs"/>
+            <result column="unit_price" property="unitPrice"/>
+            <result column="delivery_status" property="deliveryStatus"/>
+            <result column="service_status" property="serviceStatus"/>
+        </collection>
+
+    </resultMap>
+
+    <sql id="Column_List" >
+    so.*,
+    s.front_name shop_name,
+    s.logo shop_logo
+    </sql>
+    <sql id="Column_Detail_List" >
+        shop_order.*,
+        shop.front_name shop_name,
+        shop.logo shop_logo,
+        shop_order_goods.goods_id,
+        shop_order_goods.id order_goods_id,
+        shop_order_goods.goods_name,
+        shop_order_goods.delivery_time,
+        shop_order_goods.receive_time,
+        shop_order_goods.goods_img,
+        shop_order_goods.nums,
+        shop_order_goods.goods_specs,
+        shop_order_goods.unit_price,
+        shop_order_goods.delivery_status delivery_status,
+        shop_order_goods.service_status service_status
+    </sql>
+    <select id="list" resultMap="ShopGoodsResultMap">
+        SELECT
+        <include refid="Column_List"/>
+        FROM shop_order so
+        LEFT JOIN shop s
+        ON so.shop_id = s.id
+        WHERE so.user_id = #{userId} AND so.is_deleted = 0
+        <if test="orderStatus != -1">
+            <if test="orderStatus == 1">
+                AND so.status = 1
+            </if>
+            <if test="orderStatus == 2">
+                AND so.status = 2
+            </if>
+            <if test="orderStatus == 3">
+                AND so.status = 3
+            </if>
+            <if test="orderStatus == 4">
+                AND so.status = 4 OR so.status = 8 AND so.is_evaluated = 0
+            </if>
+        </if>
+        ORDER BY so.created_time DESC
+    </select>
+    <select id = "listOrderGoods" resultMap="GoodsMap">
+        SELECT
+        shop_order_goods.goods_id,
+        shop_order_goods.id order_goods_id,
+        shop_order_goods.goods_name,
+        shop_order_goods.delivery_time,
+        shop_order_goods.goods_img,
+        shop_order_goods.nums,
+        shop_order_goods.goods_specs,
+        shop_order_goods.unit_price,
+        shop_order_goods.delivery_status delivery_status,
+        shop_order_goods.service_status service_status
+        FROM
+        shop_order_goods
+        WHERE order_id = #{id}
+    </select>
+
+    <select id="orderDetailList" resultMap="OrderDetailMap">
+        SELECT
+        <include refid="Column_Detail_List"/>
+        FROM shop,shop_order,shop_order_goods
+        WHERE shop.id = shop_order.shop_id AND shop_order.id = shop_order_goods.order_id
+        AND shop_order.id = #{orderId} AND shop_order.is_deleted = 0
+    </select>
+
+    <select id="logisticsInfo" resultType="cn.ibdsr.web.modular.shop.order.transfer.LogisticsInfoVO">
+        SELECT * from shop_order_goods g
+        where g.order_id = #{orderId} AND g.is_deleted = 0
+    </select>
+    
+    <select id="serviceOrderlist" resultType="cn.ibdsr.web.modular.shop.order.transfer.RefundOrderVO">
+        SELECT distinct
+        sor.order_goods_id orderGoodsId,
+        sor.shop_id shopId
+        FROM shop_order so, shop_order_refund sor
+        WHERE so.id = sor.order_id
+        AND so.user_id = #{userId} AND so.is_deleted = 0
+        ORDER BY sor.created_time DESC
+    </select>
+
+</mapper>

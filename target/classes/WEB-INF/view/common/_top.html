@@ -1,0 +1,21 @@
+<div class="row">
+    <nav class="navbar navbar-static-top" role="navigation">
+        <div class="navbar-header">
+            <a class="navbar-brand" href="#">
+                <img src="${ctxPath}/static/img/logo.svg" alt="logo">
+            </a>
+        </div>
+        <div class="nav-header">
+            <div class="navbar-header navbar-right">
+                <a href=""  class="bar-adminlogo"><img alt="image" class="img-circle"
+                                                       @if(isEmpty(avatar)){
+                                                       src="${ctxPath}/static/img/boy.gif"
+                                                       @}else{
+                                                       src="${ctxPath}/kaptcha/${avatar}"
+                                                       @}
+                                                       width="36px" height="36px"/></a>
+                <a href="logout" class="roll-nav roll-right J_tabExit"><i class="fa fa fa-sign-out"></i> 退出</a>
+            </div>
+        </div>
+    </nav>
+</div>

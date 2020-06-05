@@ -1,0 +1,316 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.ibdsr.web.modular.shop.home.dao.HomeDao">
+
+    <resultMap id="GoodsCategoryVOResultMap" type="cn.ibdsr.web.modular.shop.home.transfer.GoodsCategoryVO">
+        <id column="id" property="id" />
+        <result column="name" property="name" />
+        <result column="front_name" property="frontName" />
+        <result column="icon_img" property="iconImg" />
+    </resultMap>
+
+    <resultMap id="GoodListVOResultMap" type="cn.ibdsr.web.modular.shop.home.transfer.GoodsListVO">
+        <id column="id" property="id" />
+        <result column="name" property="name" />
+        <result column="img" property="img" />
+        <result column="price" property="price" />
+        <result column="referPrice" property="referPrice" />
+        <result column="stock" property="stock" />
+        <result column="saleNum" property="saleNum" />
+        <result column="viewNum" property="viewNum" />
+    </resultMap>
+
+    <resultMap id="SearchHistoryResultMap" type="cn.ibdsr.web.modular.shop.home.transfer.SearchHistoryDTO">
+        <id column="id" property="id" />
+        <result column="type" property="type" />
+        <result column="keyword" property="keyword" />
+        <result column="created_user" property="createdUser" />
+        <result column="created_time" property="createdTime" />
+    </resultMap>
+
+    <resultMap id="AdListVOResultMap" type="cn.ibdsr.web.modular.shop.home.transfer.AdListVO">
+        <id column="id" property="id" />
+        <result column="position_id" property="positionId" />
+        <result column="type" property="type" />
+        <result column="relation_val" property="relationVal" />
+        <result column="img" property="img" />
+        <result column="sequence" property="sequence" />
+        <result column="status" property="status" />
+        <result column="publish_time" property="publishTime" />
+        <result column="created_time" property="createdTime" />
+    </resultMap>
+
+    <!--获取销量前三的二级类目-->
+    <select id="listSecCategory" resultMap="GoodsCategoryVOResultMap">
+        SELECT
+            a.category_id AS id,
+            a. name,
+            a.front_name,
+            a.icon_img
+        FROM
+            (
+                SELECT
+                    goods_category.id AS category_id,
+                    goods_category.name AS name,
+                    goods_category.front_name AS front_name,
+                    goods_category.icon_img AS icon_img,
+                    view_stats.sale_num AS saleNum
+                FROM
+                    goods_category,
+                    goods,
+                    view_stats,
+                    shop
+                WHERE
+                    goods_category.id = goods.category_id
+                AND goods_category.`level` = 2
+                AND goods_category.is_deleted = 0
+                AND view_stats.goods_id = goods.id
+                AND view_stats.is_deleted = 0
+                AND goods.is_deleted = 0
+                AND goods.shop_id = shop.id
+                AND shop.`status`= 3
+                AND shop.is_deleted = 0
+            ) AS a
+        GROUP BY
+            category_id
+        ORDER BY SUM(a.saleNum) DESC
+        LIMIT 3
+    </select>
+
+    <!--查找所有一级类目-->
+    <select id="listFirstCategory" resultMap="GoodsCategoryVOResultMap">
+        SELECT
+            goods_category.id,
+            goods_category.`name`,
+            goods_category.front_name,
+            goods_category.icon_img
+        FROM
+            goods_category
+        WHERE
+            goods_category.`level` = 1
+        AND goods_category.is_deleted = 0
+    </select>
+
+    <!--根据pid查找一级类目下的所有二级类目-->
+    <select id="getSecCategoryById" resultMap="GoodsCategoryVOResultMap">
+        SELECT
+            goods_category.id,
+            goods_category.`name`,
+            goods_category.front_name,
+            goods_category.icon_img
+        FROM
+            goods_category
+        WHERE
+            goods_category.pid = #{id}
+        AND goods_category.is_deleted = 0
+    </select>
+
+    <!--二级类目下搜索商品-->
+    <select id="queryGoodsInSecCategory" resultMap="GoodListVOResultMap">
+        <if test="keyword != null and keyword != ''">
+            SELECT
+            goods.id,
+            goods.shop_id,
+            goods.category_id,
+            goods.`name`,
+            goods.main_img AS img,
+            goods.`status`,
+            goods.price AS price,
+            goods.refer_price AS referPrice,
+            goods.stock,
+            view_stats.view_num AS viewNum,
+            view_stats.sale_num AS saleNum
+            FROM
+            shop, goods
+            LEFT JOIN view_stats ON view_stats.goods_id = goods.id
+            WHERE
+            goods.category_id = #{secCategoryId}
+            AND goods.is_deleted = 0
+            AND goods.stock > 0
+            AND goods.`status` = 1
+            AND goods.shop_id = shop.id
+            AND shop.`status` = 3
+            AND shop.is_deleted = 0
+            AND goods.`name` like CONCAT('%',#{keyword},'%')
+            GROUP BY goods.id
+        </if>
+        <if test="keyword == null or keyword == ''">
+            SELECT
+            goods.id,
+            goods.shop_id,
+            goods.category_id,
+            goods.`name`,
+            goods.main_img AS img,
+            goods.`status`,
+            goods.price AS price,
+            goods.refer_price AS referPrice,
+            goods.stock,
+            view_stats.view_num AS viewNum,
+            view_stats.sale_num AS saleNum
+            FROM
+            shop, goods
+            LEFT JOIN view_stats ON view_stats.goods_id = goods.id
+            WHERE
+            goods.category_id = #{secCategoryId}
+            AND goods.is_deleted = 0
+            AND goods.`status` = 1
+            AND goods.shop_id = shop.id
+            AND shop.`status` = 3
+            AND shop.is_deleted = 0
+            GROUP BY goods.id
+        </if>
+    </select>
+
+    <!--首页商品推荐-->
+    <select id="listRecommendGoods" resultMap="GoodListVOResultMap">
+        SELECT
+            goods.id,
+            goods.`name`,
+            goods.main_img AS img,
+            goods.price AS price,
+            goods.refer_price AS referPrice,
+            goods.stock,
+            view_stats.view_num AS viewNum,
+            view_stats.sale_num AS saleNum
+        FROM
+            shop, goods
+        LEFT JOIN view_stats ON view_stats.goods_id = goods.id
+        WHERE
+            goods.is_deleted = 0
+        AND goods.`status` = 1
+        AND goods.shop_id = shop.id
+        AND shop.`status` = 3
+        AND shop.is_deleted = 0
+        GROUP BY
+            goods.id
+        ORDER BY
+            sale_num DESC
+        LIMIT 50
+    </select>
+
+    <!--商品搜索-->
+    <select id="queryGoods" resultMap="GoodListVOResultMap">
+        SELECT
+            goods.id,
+            goods.shop_id,
+            goods.category_id,
+            goods.`name`,
+            goods.main_img AS img,
+            goods.`status`,
+            goods.price AS price,
+            goods.refer_price AS referPrice,
+            goods.stock,
+            view_stats.view_num AS viewNum,
+            view_stats.sale_num AS saleNum
+        FROM
+            shop, goods
+        LEFT JOIN view_stats ON view_stats.goods_id = goods.id
+        WHERE
+            goods.is_deleted = 0
+        AND goods.stock > 0
+        AND goods.`status` = 1
+        AND goods.shop_id = shop.id
+        AND shop.`status` = 3
+        AND shop.is_deleted = 0
+        <if test="keyword != null and keyword != ''">
+            AND goods.`name` like CONCAT('%',#{keyword},'%')
+        </if>
+        GROUP BY
+        goods.id
+    </select>
+
+    <!--历史搜索记录-->
+    <select id="searchHistoryList" resultMap="SearchHistoryResultMap">
+        SELECT
+            a.id,
+            a.type,
+            a.keyword,
+            a.created_user,
+            a.created_time
+        FROM
+            (
+                SELECT
+                    *
+                FROM
+                    search_history
+                WHERE
+                    search_history.is_deleted = 0
+                AND (
+                    search_history.keyword IS NOT NULL
+                    AND LENGTH(
+                        trim(search_history.keyword)
+                    ) > 1
+                )
+                AND search_history.created_user = 18
+                ORDER BY
+                    created_time DESC
+                LIMIT 10000000000
+            ) AS a
+        GROUP BY
+            a.keyword
+        ORDER BY
+            a.created_time DESC
+        LIMIT 10
+    </select>
+
+    <!--删除历史搜索记录-->
+    <update id="delSearchHistory">
+        update search_history set is_deleted=1
+    </update>
+
+    <!--商品搜索时的热门推荐-->
+    <select id="hotRecommendInSearching" resultMap="GoodsCategoryVOResultMap">
+        SELECT
+            a.category_id,
+            a. NAME,
+            a.front_name,
+            a.icon_img
+        FROM
+            (
+                SELECT
+                    goods_category.id AS category_id,
+                    goods_category. NAME AS NAME,
+                    goods_category.front_name AS front_name,
+                    goods_category.icon_img AS icon_img,
+                    goods.stock as stock
+                FROM
+                    goods_category,
+                    goods
+                WHERE
+                    goods_category.id = goods.category_id
+                AND goods.is_deleted = 0
+                AND goods.`status` = 1
+            ) AS a
+        GROUP BY
+            category_id
+        ORDER BY SUM(a.stock) DESC
+        LIMIT 5
+    </select>
+
+    <!--广告位查询-->
+    <select id="adManager" resultMap="AdListVOResultMap">
+        SELECT
+            ad_info.id,
+            ad_info.position_id,
+            ad_info.type,
+            ad_info.relation_val,
+            ad_info.img,
+            ad_info.sequence,
+            ad_info.`status`,
+            ad_info.created_time,
+            ad_info.publish_time
+        FROM
+            ad_info,
+            ad_position
+        WHERE
+            ad_position.en_name = #{adPosition}
+        AND ad_info.position_id = ad_position.id
+        AND ad_info.`status` = 1
+        AND ad_info.is_deleted = 0
+        ORDER BY
+            (case ad_info.sequence when 0 then 1 else 0 end),
+            ad_info.sequence,
+            ad_info.created_time DESC
+            LIMIT 5
+    </select>
+</mapper>
